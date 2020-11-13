@@ -8,7 +8,6 @@ def prim(graph):
     Update this method to work when the graph has multiple connected components.
     Rather than returning a single tree, return a list of trees,
     one per component, containing the MST for each component.
-
     Each tree is a set of (weight, node1, node2) tuples.    
     """
     def prim_helper(visited, frontier, tree):
@@ -30,16 +29,23 @@ def prim(graph):
 
                 return prim_helper(visited, frontier, tree)
         
-    # pick first node as source arbitrarily
-    source = list(graph.keys())[0]
-    frontier = []
-    heappush(frontier, (0, source, source))
-    visited = set()  # store the visited nodes (don't need distance anymore)
-    tree = set()
-    prim_helper(visited, frontier, tree)
-    return tree
+    trees = []
+    visited = set()
+    while len(graph) > len(visited):
+        source = ""
+        for v in graph:
+            if v not in visited:
+                source = v
+                break
+
+        frontier = []
+        heappush(frontier, (0, source, source))
+        tree = set()
+        trees.append(prim_helper(visited, frontier, tree))
+    return trees
 
 def test_prim():    
+
     graph = {
             's': {('a', 4), ('b', 8)},
             'a': {('s', 4), ('b', 2), ('c', 5)},
@@ -52,6 +58,8 @@ def test_prim():
 
     trees = prim(graph)
     assert len(trees) == 2
+
+
     # since we are not guaranteed to get the same order
     # of edges in the answer, we'll check the size and
     # weight of each tree.
@@ -73,16 +81,25 @@ def mst_from_points(points):
     Return the minimum spanning tree for a list of points, using euclidean distance 
     as the edge weight between each pair of points.
     See test_mst_from_points.
-
     Params:
       points... a list of tuples (city_name, x-coord, y-coord)
-
     Returns:
       a list of edges of the form (weight, node1, node2) indicating the minimum spanning
       tree connecting the cities in the input.
     """
     ###TODO
-    pass
+    graph = {}
+    for i in range(len(points)):
+        for j in range(len(points)):
+            if i != j:
+                weight = euclidean_distance(points[i], points[j])
+                if points[i][0] not in graph:
+                    graph[points[i][0]] = {(points[j][0], weight)}
+                else:
+                    graph[points[i][0]].add((points[j][0], weight))
+
+    return prim(graph)[0]
+
 
 def euclidean_distance(p1, p2):
     return sqrt((p1[1] - p2[1])**2 + (p1[2] - p2[2])**2)
@@ -102,3 +119,5 @@ def test_mst_from_points():
     assert round(sum(e[0] for e in tree), 2) == 19.04
 
 
+test_prim()
+test_mst_from_points()
